@@ -21,13 +21,13 @@ def dltinsert():
         for i in range(1, 155):
             try:
                 a = Lottery(4, j, i)
-                if a.FetchData():
+                if a.FetchData(2):
                     # print a.num
                     # print a.ball
                     # print a.id
                     # print a.date
                     sql_insert = "INSERT INTO dlt(id,year,term,r1,r2,r3,r4,r5,b1,b2,ball,date) " \
-                                 "VALUES ('%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s')" \
+                                 "VALUES ('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s')" \
                                  % (
                                  a.id, a.year, a.term, a.num['r1'], a.num['r2'], a.num['r3'], a.num['r4'], a.num['r5'],
                                  a.num['b1'], a.num['b2'], a.ball, str(a.date))
@@ -44,7 +44,7 @@ def dltinsert():
 
 def dltnew(tp, year, term):
     a = Lottery(tp, year, term)
-    while not a.FetchData():
+    while not a.FetchData(2):
         time.sleep(60)
         print time.localtime()
     print a.num
@@ -52,5 +52,5 @@ def dltnew(tp, year, term):
 
 
 if __name__ == '__main__':
-    # dltnew(4,2018,106)
-    dltinsert()
+     dltnew(4,2012,119)
+    # dltinsert()
