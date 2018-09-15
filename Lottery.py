@@ -2,7 +2,8 @@
 import urllib2
 import demjson as json
 import requests
-from bs4 import  BeautifulSoup
+from bs4 import BeautifulSoup
+
 
 def request_ajax_url(url, body, referer=None, cookie=None, **headers):
     req = urllib2.Request(url)
@@ -27,10 +28,11 @@ def request_ajax_url(url, body, referer=None, cookie=None, **headers):
     if response:
         return response
 
-class Lottery():
-    def __init__(self,tp,year,term):
+
+class Lottery:
+    def __init__(self,lottery_type,year,term):
         self.num = {} # 球号
-        self.tp = tp   #体彩中心彩票类型 大乐透是4
+        self.lottery_type = lottery_type   #体彩中心彩票类型 大乐透是4
         self.year = year #年份。如2018
         self.term = term
         self.id = (year%100)*1000+term #期号
@@ -39,14 +41,14 @@ class Lottery():
         self.date = '' #日期
         self.ball = 0  #使用的是哪一套摇奖球
 
-    def FetchData(self,f):
+    def fetchdata(self,fetch_type):
 
         try:
 
-            if f == 1:
+            if fetch_type == 1:
                 thisterm = str(self.id)
                 url = "http://www.lottery.gov.cn/api/lottery_kj_detail_new.jspx?_ltype=%s&_term=%s" % (
-                    self.tp, thisterm)
+                    self.lottery_type, thisterm)
 
                 html = urllib2.urlopen(url)
 
@@ -65,7 +67,7 @@ class Lottery():
                 self.num['b2'] = int(self.numsequence[18:20])
                 self.ball = int(self.numsequence[27])
                 self.date = hjson[0]['lottery']['openTime_fmt1']
-            elif f == 2:
+            elif fetch_type == 2:
                 thisterm = "%s%s"%(self.year, self.term)
                 url = "https://www.scw98.com/cx/DLT.php?op=C"
                 body = {'QIHao': thisterm}
@@ -87,13 +89,12 @@ class Lottery():
             print(e.message)
             return False
 
-
         return True
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     a = Lottery(4,2018,100)
-    a.FetchData()
+    a.fetchdata(1)
     print(a.numsequence)
     print(a.date)
 

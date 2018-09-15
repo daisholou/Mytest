@@ -4,6 +4,7 @@ from Lottery import Lottery
 import pymysql
 import time
 import ConfigParser
+import datetime
 
 
 def dltinsert():
@@ -17,11 +18,27 @@ def dltinsert():
 
     db = pymysql.connect(host=db_host, user=db_user, passwd=db_pass, port=db_port, db='lottery', charset='utf8')
     cursor = db.cursor()
-    for j in range(2018, 2001, -1):
-        for i in range(1, 155):
+    cursor_select = db.cursor(cursor=pymysql.cursors.DictCursor)
+    sql_maxid = "SELECT year,term FROM dlt  ORDER BY id DESC LIMIT 1"
+    cursor_select.execute(sql_maxid)
+    maxid = cursor_select.fetchone()
+    maxterm = maxid['term']
+    maxyear = maxid['year']
+    thisyear = datetime.datetime.now().year
+
+    for j in range(thisyear, maxyear-1, -1):
+        if thisyear > j:
+            thisterm = 1
+        else:
+            thisterm = maxterm + 1
+        for i in range(thisterm, 156):
             try:
+                sql_select = "SELECT * FROM dlt  WHERE year = '%d' and term = '%d'" % (j, i)
+                cursor_select.execute(sql_select)
+                if cursor_select.rowcount > 0:
+                    continue
                 a = Lottery(4, j, i)
-                if a.FetchData(2):
+                if a.fetchdata(1):
                     # print a.num
                     # print a.ball
                     # print a.id
@@ -38,13 +55,14 @@ def dltinsert():
                 print err
                 continue
     cursor.close()
+    cursor_select.close()
     db.close()
     return
 
 
-def dltnew(tp, year, term):
-    a = Lottery(tp, year, term)
-    while not a.FetchData(2):
+def dltnew(lottery_type, year, term, fetch_type):
+    a = Lottery(lottery_type, year, term)
+    while not a.fetchdata(fetch_type):
         time.sleep(60)
         print time.localtime()
     print a.num
@@ -52,5 +70,5 @@ def dltnew(tp, year, term):
 
 
 if __name__ == '__main__':
-     dltnew(4,2012,119)
-    # dltinsert()
+     # dltnew(4,2018,100,1)
+     dltinsert()
