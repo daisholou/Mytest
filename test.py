@@ -7,7 +7,8 @@ import ConfigParser
 import datetime
 
 
-def dltinsert():
+def dltcon():
+
     conf = ConfigParser.ConfigParser()
     conf.read("db.conf")
 
@@ -17,6 +18,13 @@ def dltinsert():
     db_port = conf.getint("db", "db_port")
 
     db = pymysql.connect(host=db_host, user=db_user, passwd=db_pass, port=db_port, db='lottery', charset='utf8')
+
+    return db
+
+
+def dltinsert():
+
+    db = dltcon()
     cursor = db.cursor()
     cursor_select = db.cursor(cursor=pymysql.cursors.DictCursor)
     sql_maxid = "SELECT year,term FROM dlt  ORDER BY id DESC LIMIT 1"
@@ -69,6 +77,43 @@ def dltnew(lottery_type, year, term, fetch_type):
     return
 
 
+def dlt_to_date():
+    db = dltcon()
+    cursor_select = db.cursor(cursor=pymysql.cursors.DictCursor)
+    cursor_insert = db.cursor()
+    sql = "SELECT * FROM dlt"
+    cursor_select.execute(sql)
+    dlts = cursor_select.fetchall()
+    years = dlts['year']
+
+    for k in years:
+        for j in range(156):
+            if (k-2000)*1000+j+1 not in dlts['id']:
+                print k, j+1
+
+    for dlt in dlts:
+        date = []
+        for i in range(5):
+            month = "b%d" % i%2+1
+            day = 'r%d' % i+1
+            print i, month, day
+            date[i] = "%d-%d-%d" % (dlt['year'], dlt[month], dlt[day])
+
+        sql_insert = "INSERT INTO dltdate(id,ball,d1,d2,d3,d4,d5,date) " \
+                     "VALUES ('%d','%d','%s','%s','%s','%s','%s','%s')" \
+                     % (dlt['id'], dlt['ball'], date, dlt['date'])
+        print sql_insert
+        cursor_insert.execute(sql_insert)
+        db.commit(cursor_insert)
+
+    cursor_insert.close()
+    cursor_select.close()
+    db.close()
+    return
+
+
 if __name__ == '__main__':
+
      # dltnew(4,2018,100,1)
-     dltinsert()
+     # dltinsert()
+    dlt_to_date()
