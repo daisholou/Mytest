@@ -37,10 +37,10 @@ def dlt_to_date():
     try:
         for indexes in dlts.index:
             dlt = dlts.loc[indexes]
-            for i in range(5):
+            for i in range(10):
                 col_name = 'd%d' % (i+1)
-                blue = 'b%d' % (i % 2 + 1)
-                red = 'r%d' % (i + 1)
+                blue = 'b%d' % (i / 5 + 1)
+                red = 'r%d' % (i % 5 + 1)
                 year = dlt['year']
                 month = dlt[blue]
                 day = dlt[red]
@@ -56,9 +56,11 @@ def dlt_to_date():
                 # print date
                 dlts.loc[indexes, col_name] = ball_date
 
-        new_dlts = dlts[['term', 'ball', 'real_date', 'd1', 'd2', 'd3', 'd4', 'd5']]
-        new_dlts.to_sql('dlt_date', engine, if_exists='replace')
-        dlts.to_sql('dlt_with_date', engine, if_exists='replace')
+        #new_dlts = dlts[['term', 'ball', 'real_date', 'd1', 'd2', 'd3', 'd4', 'd5']]
+        #new_dlts.to_sql('dlt_date', engine, if_exists='replace')
+        # dlts.to_sql('dlt_with_date_all', engine, if_exists='replace')
+        dlts.to_csv('dlt_with_date_all.csv', sep=',')
+
 
     except Exception as err:
         print err
