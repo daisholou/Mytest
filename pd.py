@@ -4,7 +4,7 @@ import pandas as pd
 import ConfigParser
 import datetime
 from sqlalchemy import create_engine
-
+from Lottery import Dlt
 
 def dlt_con():
 
@@ -61,12 +61,42 @@ def dlt_to_date():
         # dlts.to_sql('dlt_with_date_all', engine, if_exists='replace')
         dlts.to_csv('dlt_with_date_all.csv', sep=',')
 
-
     except Exception as err:
         print err
 
     return
 
 
+def dlt_fetch():
+    dlts = pd.DataFrame(columns=('id', 'year', 'term', 'date', 'r1', 'r2', 'r3', 'r4', 'r5', 'b1', 'b2'))
+    dlts.set_index('id')
+    this_year = datetime.datetime.now().year
+
+    for j in range(2000, this_year + 1):
+        for i in range(1, 156):
+            try:
+                print i, j
+                dlt = Dlt(j, i)
+                if dlt.fetch_data():
+
+                    date = datetime.datetime.strptime(dlt.date, '%Y%m%d').date()
+                    # print dlt.num
+
+                    a = [dlt.id, j, i, date]
+                    a = a + dlt.num
+
+                    dlts.loc[dlt.id] = a
+                    # print dlts
+
+
+            except Exception as err:
+                print err
+                continue
+
+    dlts.to_csv('dlt_all.csv', sep=',')
+    return
+
+
 if __name__ == '__main__':
-    dlt_to_date()
+    dlt_fetch()
+
