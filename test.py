@@ -1,84 +1,51 @@
 # -*- coding: UTF-8 -*-
 
-from Lottery import Lottery
-import pymysql
-import time
-import ConfigParser
+import pd
 import datetime
 
+def main():
 
-def dltcon():
+    name = 'dlt_with_date_from_csv.csv'
 
-    conf = ConfigParser.ConfigParser()
-    conf.read("db.conf")
+    dlts = pd.dlt_read(name)
 
-    db_host = conf.get("db", "db_host")
-    db_user = conf.get("db", "db_user")
-    db_pass = conf.get("db", "db_pass")
-    db_port = conf.getint("db", "db_port")
+    dates = []
 
-    db = pymysql.connect(host=db_host, user=db_user, passwd=db_pass, port=db_port, db='lottery', charset='utf8')
+    for index in dlts.index:
+        dlt = dlts.loc[index]
+        for i in range(10):
+            dates.append(dlt.iloc[i+13].encode('utf-8'))
 
-    return db
+    dates = list(set(dates))
 
+    f = open('hello.txt', 'w')
 
-def dltinsert():
+    for date in dates:
+        f.writelines(date+'\n')
 
-    db = dltcon()
-    cursor = db.cursor()
-    cursor_select = db.cursor(cursor=pymysql.cursors.DictCursor)
-    sql_maxid = "SELECT year,term FROM dlt  ORDER BY id DESC LIMIT 1"
-    cursor_select.execute(sql_maxid)
-    maxid = cursor_select.fetchone()
-    maxterm = maxid['term']
-    maxyear = maxid['year']
-    thisyear = datetime.datetime.now().year
-
-    for j in range(thisyear, maxyear-1, -1):
-        if thisyear > j:
-            thisterm = 1
-        else:
-            thisterm = maxterm + 1
-        for i in range(thisterm, 156):
-            try:
-                sql_select = "SELECT * FROM dlt  WHERE year = '%d' and term = '%d'" % (j, i)
-                cursor_select.execute(sql_select)
-                if cursor_select.rowcount > 0:
-                    continue
-                a = Lottery(4, j, i)
-                if a.fetchdata(1):
-                    # print a.num
-                    # print a.ball
-                    # print a.id
-                    # print a.date
-                    sql_insert = "INSERT INTO dlt(id,year,term,r1,r2,r3,r4,r5,b1,b2,ball,date) " \
-                                 "VALUES ('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s')" \
-                                 % (
-                                 a.id, a.year, a.term, a.num['r1'], a.num['r2'], a.num['r3'], a.num['r4'], a.num['r5'],
-                                 a.num['b1'], a.num['b2'], a.ball, str(a.date))
-                    print sql_insert
-                    cursor.execute(sql_insert)
-                    db.commit()
-            except Exception as err:
-                print err
-                continue
-    cursor.close()
-    cursor_select.close()
-    db.close()
-    return
-
-
-def dltnew(lottery_type, year, term, fetch_type):
-    a = Lottery(lottery_type, year, term)
-    while not a.fetchdata(fetch_type):
-        time.sleep(60)
-        print time.localtime()
-    print a.num
-    return
+    f.close()
 
 
 if __name__ == '__main__':
 
-     # dltnew(4,2018,100,1)
-     # dltinsert()
-    dlt_to_date()
+    dates = ['2018/1/11',
+            '2018/2/6',
+            '2018/2/12',
+            '2018/3/14',
+            '2018/5/8',
+            '2018/6/11',
+            '2018/6/13',
+            '2018/6/21',
+            '2018/8/20',
+            '2018/9/6',
+            '2018/9/11',
+            '2018/9/12',
+            '2018/9/17',
+            '2018/9/22',
+            '2018/12/10',
+            '2018/12/22',
+            '2018/12/31']
+    for date in dates:
+        date = datetime.datetime.strptime(date, '%Y/%m/%d')
+        print date , pd.date_to_ball(date.year, date.month, date.day)
+
